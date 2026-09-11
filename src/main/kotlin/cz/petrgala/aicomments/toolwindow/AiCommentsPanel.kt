@@ -101,7 +101,7 @@ class AiCommentsPanel(private val project: Project, parentDisposable: Disposable
 
     private fun lineCountOf(relativePath: String): Int? {
         val file = ProjectPaths.findFile(project, relativePath) ?: return null
-        return FileDocumentManager.getInstance().getDocument(file)?.lineCount
+        return FileDocumentManager.getInstance().getCachedDocument(file)?.lineCount
     }
 
     private fun navigateToSelection(): Boolean {
