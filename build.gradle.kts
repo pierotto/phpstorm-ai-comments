@@ -76,4 +76,11 @@ tasks {
     test {
         useJUnitPlatform()
     }
+    prepareTestSandbox {
+        // The bundled Swagger plugin ships a postStartupActivity that references
+        // com.intellij.swagger.visualEditing.SwVisualEditingActionsTestService, a class
+        // missing from the PhpStorm 2024.1.7 release build of swagger.jar. It runs
+        // unconditionally on project open and crashes every BasePlatformTestCase.
+        disabledPlugins.add("com.intellij.swagger")
+    }
 }

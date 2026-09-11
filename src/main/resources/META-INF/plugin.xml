@@ -5,5 +5,7 @@
     <depends>com.intellij.modules.platform</depends>
 
     <extensions defaultExtensionNs="com.intellij">
+        <notificationGroup id="AI Comments" displayType="BALLOON"/>
+        <postStartupActivity implementation="cz.petrgala.aicomments.startup.AiCommentsStartup"/>
     </extensions>
 </idea-plugin>

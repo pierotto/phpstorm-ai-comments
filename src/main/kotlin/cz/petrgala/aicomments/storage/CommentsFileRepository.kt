@@ -1,6 +1,7 @@
 package cz.petrgala.aicomments.storage
 
 import cz.petrgala.aicomments.model.CommentsFile
+import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
@@ -70,7 +71,12 @@ class CommentsFileRepository(
         Files.createDirectories(path.parent)
         val tmp = path.resolveSibling("${path.fileName}.tmp")
         Files.writeString(tmp, codec.encode(file))
-        Files.move(tmp, path, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE)
+        try {
+            Files.move(tmp, path, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE)
+        } catch (e: IOException) {
+            Files.deleteIfExists(tmp)
+            throw e
+        }
     }
 
     private companion object {
