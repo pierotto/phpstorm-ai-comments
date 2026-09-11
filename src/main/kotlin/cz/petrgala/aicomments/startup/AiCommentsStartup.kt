@@ -5,10 +5,12 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.ProjectActivity
 import cz.petrgala.aicomments.editor.CommentMarkerManager
 import cz.petrgala.aicomments.storage.CommentStore
+import cz.petrgala.aicomments.watcher.CommentsFileWatcher
 
 class AiCommentsStartup : ProjectActivity {
     override suspend fun execute(project: Project) {
         project.service<CommentStore>().reload()
         project.service<CommentMarkerManager>()
+        project.service<CommentsFileWatcher>()
     }
 }
