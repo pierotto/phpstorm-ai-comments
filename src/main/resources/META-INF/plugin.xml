@@ -7,5 +7,10 @@
     <extensions defaultExtensionNs="com.intellij">
         <notificationGroup id="AI Comments" displayType="BALLOON"/>
         <postStartupActivity implementation="cz.petrgala.aicomments.startup.AiCommentsStartup"/>
+        <projectConfigurable parentId="tools"
+                             id="cz.petrgala.aicomments.settings"
+                             displayName="AI Comments"
+                             nonDefaultProject="true"
+                             instance="cz.petrgala.aicomments.settings.AiCommentsConfigurable"/>
     </extensions>
 </idea-plugin>
