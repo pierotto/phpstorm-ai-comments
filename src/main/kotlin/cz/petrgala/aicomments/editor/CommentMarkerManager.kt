@@ -51,13 +51,16 @@ class CommentMarkerManager(private val project: Project) : Disposable {
     }
 
     fun refresh(editor: Editor) {
+        val document = editor.document
+        val currentLines = currentLines(editor)
         clear(editor)
         if (!AiCommentsSettings.getInstance(project).state.showGutterIcons) return
-        val file = FileDocumentManager.getInstance().getFile(editor.document) ?: return
+        val fileDocumentManager = FileDocumentManager.getInstance()
+        val file = fileDocumentManager.getFile(document) ?: return
         val relativePath = ProjectPaths.relativePath(project, file) ?: return
-        val document = editor.document
+        val unsaved = fileDocumentManager.isDocumentUnsaved(document)
         val markers = project.service<CommentStore>().commentsFor(relativePath)
-            .groupBy { it.line }
+            .groupBy { comment -> if (unsaved) currentLines[comment.id] ?: comment.line else comment.line }
             .filterKeys { it in 1..document.lineCount }
             .map { (line, comments) ->
                 editor.markupModel.addLineHighlighter(null, line - 1, HighlighterLayer.LAST).apply {
@@ -69,6 +72,14 @@ class CommentMarkerManager(private val project: Project) : Disposable {
     }
 
     fun markers(editor: Editor): List<RangeHighlighter> = editor.getUserData(MARKERS_KEY).orEmpty()
+
+    private fun currentLines(editor: Editor): Map<String, Int> = markers(editor)
+        .filter { it.isValid }
+        .flatMap { marker ->
+            val line = editor.document.getLineNumber(marker.startOffset) + 1
+            marker.getUserData(COMMENT_IDS_KEY).orEmpty().map { it to line }
+        }
+        .toMap()
 
     private fun clear(editor: Editor) {
         markers(editor).forEach { editor.markupModel.removeHighlighter(it) }

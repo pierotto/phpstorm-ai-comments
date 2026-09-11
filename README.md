@@ -6,7 +6,7 @@ root; the plugin shows their state in the gutter and a tool window.
 
 ## Workflow
 
-1. In the editor: right-click a line number (or press `Cmd+Alt+Shift+C`, `Ctrl+Alt+Shift+C`
+1. In the editor: right-click a line number (or press `Cmd+Alt+Shift+A`, `Ctrl+Alt+Shift+A`
    on Linux/Windows) → **Add AI Comment** → type the note. A blue dot appears in the gutter.
 2. In Claude Code, in the same project: `/process-ai-comments` (or "process AI comments").
    Claude edits the code or answers, and writes its response back into the file.
@@ -68,7 +68,7 @@ Requires JDK 21 (`brew install --cask temurin@21`).
 ### Smoke checklist before a release
 
 - [ ] Add a comment from the gutter menu, the editor menu and the shortcut
-- [ ] Validation: empty text blocked, warning above 400 characters, blocked above 500
+- [ ] Validation: empty text blocked, warning from 400 characters, blocked above 500
 - [ ] Open comment → *Mark as Resolved* → gray check
 - [ ] Edit the JSON externally (open → processed with a response) → green dot within ~1 s
 - [ ] Processed comment → *OK* → resolved; *Follow-up* → new open comment, old resolved

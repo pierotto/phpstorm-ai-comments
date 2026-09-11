@@ -49,6 +49,8 @@ with seconds (`2026-09-11T10:25:00Z`).
      - an **instruction** ("use FQN here", "extract this to a method") → change the code;
      - a **question** (ends with `?`, or starts with "is/does/why/should/can") → answer, do
        not change the code.
+   - If your edit moved the commented code (e.g. you inserted lines above it), set `line`
+     to the line where that code now is.
    - Write `claudeResponse`: 1–3 sentences in the language of the comment saying what you
      changed (with the new name / shape) or the answer. No preamble.
 3. Update the record: `"status": "processed"`, `"processed": true`,
@@ -62,8 +64,9 @@ with seconds (`2026-09-11T10:25:00Z`).
 ## Rules
 
 - Change only `status`, `processed`, `processedAt`, `claudeResponse` and
-  `metadata.lastModified`. Never delete a record, never change `id`, `line`, `text`,
-  `created` or `author`, never add records.
+  `metadata.lastModified`. Change `line` only when your own edit moved the commented code;
+  otherwise leave it. Never delete a record, never change `id`, `text`, `created` or
+  `author`, never add records.
 - Leave `processed` and `resolved` records untouched.
 - If a line number no longer matches the code the comment describes (the file changed),
   look for the described code nearby; if you cannot find it, answer in `claudeResponse`

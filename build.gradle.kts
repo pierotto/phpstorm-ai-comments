@@ -44,6 +44,7 @@ kotlin {
         jvmTarget = JvmTarget.JVM_17
         apiVersion = KotlinVersion.KOTLIN_1_9
         languageVersion = KotlinVersion.KOTLIN_1_9
+        // Without this Kotlin 1.9 emits delegating stubs for ToolWindowFactory defaults that the plugin verifier reports as internal API use.
         freeCompilerArgs.add("-Xjvm-default=all")
     }
 }
@@ -68,6 +69,7 @@ intellijPlatform {
 }
 
 tasks {
+    // IJPGP 2.18.1 derives the target from the toolchain (intellij-platform-gradle-plugin#1772), so pin 17 here.
     withType<JavaCompile> {
         options.release.set(17)
     }

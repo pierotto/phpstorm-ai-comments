@@ -34,6 +34,7 @@ class CommentsFileWatcher(private val project: Project) : Disposable {
 
     fun isCommentsFileEvent(event: VFileEvent): Boolean {
         if (FileUtil.pathsEqual(event.path, watchedPath)) return true
+        // The VFS reports a newly created .claude directory as one event without child events.
         if (event is VFileCreateEvent && event.isDirectory) {
             val dirPath = FileUtil.toSystemIndependentName(event.path)
             if (watchedPath.startsWith("$dirPath/")) return true

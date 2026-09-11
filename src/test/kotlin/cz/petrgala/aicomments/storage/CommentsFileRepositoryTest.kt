@@ -71,6 +71,22 @@ class CommentsFileRepositoryTest {
     }
 
     @Test
+    fun `invalid records are reported and block writes`() {
+        Files.createDirectories(path.parent)
+        val json = """{"version": 1, "comments": {"a.php": [
+            {"id": "c_1_0", "line": 1, "text": "t", "status": "open", "created": "2026-09-11T10:00:00Z"},
+            {"id": "c_1_1", "line": 2}
+        ]}}"""
+        Files.writeString(path, json)
+
+        val load = repo().load() as LoadResult.LoadedWithSkips
+        assertEquals(listOf("a.php: c_1_1: missing text"), load.skipped)
+        assertNotNull(load.file.find("c_1_0"))
+        assertThrows(CommentsFileUnavailableException::class.java) { repo().mutate { it } }
+        assertEquals(json, Files.readString(path))
+    }
+
+    @Test
     fun `unsupported version is reported and blocks writes`() {
         Files.createDirectories(path.parent)
         Files.writeString(path, """{"version": 2, "comments": {}}""")

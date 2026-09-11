@@ -44,6 +44,8 @@ comment templates, multi-file context, direct API integration.
 | Documentation | Single `README.md` | Three documents are excessive for a project of this size. |
 | Sample project | Replaced by a test fixture `comments.json` | Same value, no extra artifact to maintain. |
 | UI language | English | Repository content is English. |
+| Write threading | Mutations run synchronously on the caller's thread, not on a pooled thread | The file is small and local; the EDT callers are the dialogs and the save listener, and a synchronous result lets them react immediately. |
+| Reset file | Renames the broken file; the empty file is created lazily by the first write | A missing file already means "empty", so an eager write would only add a second write path. |
 
 ## 4. Project layout
 
@@ -125,14 +127,17 @@ Project-level service, the single owner of comment data.
   `ATOMIC_MOVE`), `metadata.lastModified` updated, followed by
   `VfsUtil.markDirtyAndRefresh` so the VFS and the watcher see it.
 - Read: Gson into the model. A record with a missing required field or an unknown
-  `status` is skipped with a `Logger.warn`; the rest of the file loads. `version > 1`
-  sets the store read-only and shows a notification.
+  `status` is skipped with a `Logger.warn`; the rest of the file loads, but the store is
+  read-only (a write would drop the skipped record) and a notification with *Open file*
+  says so. `version > 1` sets the store read-only and shows a notification.
 - Malformed JSON: snapshot becomes empty, store is read-only, notification with actions
-  *Reset file* (renames the broken file to `comments.json.broken-<timestamp>`, creates an
-  empty one) and *Open file*.
+  *Reset file* (renames the broken file to `comments.json.broken-<timestamp>`; the empty
+  file is created lazily by the first write) and *Open file*.
 - I/O failure on write: notification with the error, snapshot unchanged.
 
-Public API (all callable from any thread, write operations run on a pooled thread):
+Public API (all callable from any thread; mutations run synchronously on the caller's
+thread — the file is small and local, and the EDT callers are the dialogs and the save
+listener):
 
 ```kotlin
 fun snapshot(): CommentsFile
@@ -261,7 +266,8 @@ Procedure the skill prescribes:
    done or answered, in the language of the comment.
 4. Set `status: "processed"`, `processed: true`, `processedAt` (UTC ISO 8601) and
    `metadata.lastModified`.
-5. Only these fields may change; never delete records or alter `id`, `text`, `line`,
+5. Only these fields may change; `line` changes only when Claude's own edit moved the
+   commented code, otherwise it stays. Never delete records or alter `id`, `text`,
    `created`, `author`. Keep the pretty-printed format. Write the whole file once after all
    comments are handled so the IDE refreshes once and never sees a half-processed file.
 6. Finish with a summary: comments processed, files modified.
@@ -272,7 +278,7 @@ Procedure the skill prescribes:
 |---|---|
 | File missing | Treated as empty; created on first write |
 | Malformed JSON | Empty read-only snapshot, notification with *Reset file* / *Open file* |
-| Invalid single record | Skipped with a log warning, rest loads |
+| Invalid single record | Skipped with a log warning, rest loads read-only, notification with *Open file* |
 | `version > 1` | Read-only, notification "unsupported version" |
 | Write I/O error | Notification, snapshot unchanged |
 | Line beyond document end | No marker; tool window shows `(line out of range)` |

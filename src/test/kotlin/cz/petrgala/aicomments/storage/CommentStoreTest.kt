@@ -62,4 +62,19 @@ class CommentStoreTest : AiCommentsPlatformTestCase() {
         assertEquals(1, backups.size)
         backups.forEach { Files.delete(it) }
     }
+
+    fun testInvalidRecordsMakeStoreReadOnlyButKeepValidComments() {
+        val path = ProjectPaths.commentsFile(project)
+        Files.createDirectories(path.parent)
+        Files.writeString(path, """{"version": 1, "comments": {"src/Foo.php": [
+            {"id": "c_1_0", "line": 1, "text": "t", "status": "open", "created": "2026-09-11T10:00:00Z"},
+            {"id": "c_1_1", "line": 2}
+        ]}}""")
+
+        store.reload()
+
+        assertTrue(store.isReadOnly)
+        assertNull(store.add("src/Foo.php", 1, "text"))
+        assertEquals(listOf("c_1_0"), store.commentsFor("src/Foo.php").map { it.id })
+    }
 }

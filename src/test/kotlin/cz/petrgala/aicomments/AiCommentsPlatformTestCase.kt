@@ -6,6 +6,7 @@ import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import cz.petrgala.aicomments.storage.CommentStore
 import cz.petrgala.aicomments.storage.ProjectPaths
 import java.nio.file.Files
+import java.nio.file.Path
 
 abstract class AiCommentsPlatformTestCase : BasePlatformTestCase() {
 
@@ -15,7 +16,7 @@ abstract class AiCommentsPlatformTestCase : BasePlatformTestCase() {
         super.setUp()
         val path = ProjectPaths.commentsFile(project)
         Files.deleteIfExists(path)
-        LocalFileSystem.getInstance().refreshIoFiles(listOf(path.toFile()), false, false, null)
+        refreshVfs(path)
         store = project.service<CommentStore>()
         store.reload()
     }
@@ -24,9 +25,14 @@ abstract class AiCommentsPlatformTestCase : BasePlatformTestCase() {
         try {
             val path = ProjectPaths.commentsFile(project)
             Files.deleteIfExists(path)
-            LocalFileSystem.getInstance().refreshIoFiles(listOf(path.toFile()), false, false, null)
+            refreshVfs(path)
         } finally {
             super.tearDown()
         }
+    }
+
+    // The light fixture is shared between test classes and keeps a stale VFS entry for the deleted file otherwise.
+    private fun refreshVfs(path: Path) {
+        LocalFileSystem.getInstance().refreshIoFiles(listOf(path.toFile()), false, false, null)
     }
 }

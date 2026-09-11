@@ -1,5 +1,6 @@
 package cz.petrgala.aicomments.storage
 
+import com.intellij.notification.Notification
 import com.intellij.notification.NotificationAction
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
@@ -39,6 +40,8 @@ class CommentStore(private val project: Project) {
     var isReadOnly: Boolean = false
         private set
 
+    private var brokenNotification: Notification? = null
+
     fun snapshot(): CommentsFile = snapshot
 
     fun commentsFor(relativePath: String): List<Comment> = snapshot.comments[relativePath].orEmpty()
@@ -68,6 +71,10 @@ class CommentStore(private val project: Project) {
             try {
                 when (val result = repository.load()) {
                     is LoadResult.Loaded -> update(result.file, readOnly = false)
+                    is LoadResult.LoadedWithSkips -> {
+                        update(result.file, readOnly = true)
+                        notifyBroken("comments.json has ${result.skipped.size} invalid record(s); fix them to resume writing", offerReset = false)
+                    }
                     LoadResult.Missing -> update(CommentsFile.empty(project.name, repository.now()), readOnly = false)
                     is LoadResult.Malformed -> {
                         update(CommentsFile.empty(project.name, repository.now()), readOnly = true)
@@ -139,7 +146,7 @@ class CommentStore(private val project: Project) {
         snapshot = file
         isReadOnly = readOnly
         val publish = Runnable {
-            if (!project.isDisposed) project.messageBus.syncPublisher(CommentsChangedListener.TOPIC).commentsChanged(file)
+            if (!project.isDisposed) project.messageBus.syncPublisher(CommentsChangedListener.TOPIC).commentsChanged(snapshot)
         }
         val app = ApplicationManager.getApplication()
         if (app.isDispatchThread) publish.run() else app.invokeLater(publish, project.disposed)
@@ -150,6 +157,7 @@ class CommentStore(private val project: Project) {
     }
 
     private fun notifyBroken(message: String, offerReset: Boolean) {
+        brokenNotification?.expire()
         val notification = NotificationGroupManager.getInstance()
             .getNotificationGroup(NOTIFICATION_GROUP)
             .createNotification("AI Comments", message, NotificationType.ERROR)
@@ -162,6 +170,7 @@ class CommentStore(private val project: Project) {
             }
         })
         notification.notify(project)
+        brokenNotification = notification
     }
 
     private fun notify(message: String, type: NotificationType) {

@@ -30,8 +30,8 @@
                 description="Add an AI comment to the current line">
             <add-to-group group-id="EditorGutterPopupMenu" anchor="last"/>
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>
-            <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt shift C"/>
-            <keyboard-shortcut keymap="Mac OS X 10.5+" first-keystroke="meta alt shift C"/>
+            <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt shift A"/>
+            <keyboard-shortcut keymap="Mac OS X 10.5+" first-keystroke="meta alt shift A"/>
         </action>
         <action id="cz.petrgala.aicomments.Reload"
                 class="cz.petrgala.aicomments.actions.ReloadCommentsAction"
