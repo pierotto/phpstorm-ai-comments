@@ -12,6 +12,10 @@
                              displayName="AI Comments"
                              nonDefaultProject="true"
                              instance="cz.petrgala.aicomments.settings.AiCommentsConfigurable"/>
+        <toolWindow id="AI Comments"
+                    anchor="right"
+                    icon="/icons/toolwindow.svg"
+                    factoryClass="cz.petrgala.aicomments.toolwindow.AiCommentsToolWindowFactory"/>
     </extensions>
 
     <applicationListeners>
@@ -29,5 +33,9 @@
             <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt shift C"/>
             <keyboard-shortcut keymap="Mac OS X 10.5+" first-keystroke="meta alt shift C"/>
         </action>
+        <action id="cz.petrgala.aicomments.Reload"
+                class="cz.petrgala.aicomments.actions.ReloadCommentsAction"
+                text="Reload AI Comments"
+                description="Reload .claude/comments.json from disk"/>
     </actions>
 </idea-plugin>
