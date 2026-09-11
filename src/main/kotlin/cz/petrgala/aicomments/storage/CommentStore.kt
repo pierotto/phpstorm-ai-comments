@@ -18,11 +18,14 @@ import cz.petrgala.aicomments.model.withComment
 import cz.petrgala.aicomments.model.withLines
 import cz.petrgala.aicomments.model.withStatus
 import java.io.IOException
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 
 @Service(Service.Level.PROJECT)
 class CommentStore(private val project: Project) {
 
     private val log = thisLogger()
+    private val lock = ReentrantLock()
     private val repository = CommentsFileRepository(
         path = ProjectPaths.commentsFile(project),
         projectName = project.name,
@@ -61,34 +64,38 @@ class CommentStore(private val project: Project) {
     }
 
     fun reload() {
-        try {
-            when (val result = repository.load()) {
-                is LoadResult.Loaded -> update(result.file, readOnly = false)
-                LoadResult.Missing -> update(CommentsFile.empty(project.name, repository.now()), readOnly = false)
-                is LoadResult.Malformed -> {
-                    update(CommentsFile.empty(project.name, repository.now()), readOnly = true)
-                    notifyBroken("comments.json is malformed: ${result.reason}", offerReset = true)
+        lock.withLock {
+            try {
+                when (val result = repository.load()) {
+                    is LoadResult.Loaded -> update(result.file, readOnly = false)
+                    LoadResult.Missing -> update(CommentsFile.empty(project.name, repository.now()), readOnly = false)
+                    is LoadResult.Malformed -> {
+                        update(CommentsFile.empty(project.name, repository.now()), readOnly = true)
+                        notifyBroken("comments.json is malformed: ${result.reason}", offerReset = true)
+                    }
+                    is LoadResult.UnsupportedVersion -> {
+                        update(CommentsFile.empty(project.name, repository.now()), readOnly = true)
+                        notifyBroken("comments.json version ${result.version} is not supported by this plugin", offerReset = false)
+                    }
                 }
-                is LoadResult.UnsupportedVersion -> {
-                    update(CommentsFile.empty(project.name, repository.now()), readOnly = true)
-                    notifyBroken("comments.json version ${result.version} is not supported by this plugin", offerReset = false)
-                }
+            } catch (e: IOException) {
+                log.warn("comments.json read failed", e)
+                notify("Could not read comments.json: ${e.message}", NotificationType.ERROR)
             }
-        } catch (e: IOException) {
-            log.warn("comments.json read failed", e)
-            notify("Could not read comments.json: ${e.message}", NotificationType.ERROR)
         }
     }
 
     fun reset() {
-        try {
-            val backup = repository.backupBroken()
-            refreshVfs()
-            reload()
-            if (backup != null) notify("Previous file kept as ${backup.fileName}", NotificationType.INFORMATION)
-        } catch (e: IOException) {
-            log.warn("comments.json reset failed", e)
-            notify("Could not reset comments.json: ${e.message}", NotificationType.ERROR)
+        lock.withLock {
+            try {
+                val backup = repository.backupBroken()
+                refreshVfs()
+                reload()
+                if (backup != null) notify("Previous file kept as ${backup.fileName}", NotificationType.INFORMATION)
+            } catch (e: IOException) {
+                log.warn("comments.json reset failed", e)
+                notify("Could not reset comments.json: ${e.message}", NotificationType.ERROR)
+            }
         }
     }
 
@@ -103,13 +110,13 @@ class CommentStore(private val project: Project) {
         claudeResponse = null,
     )
 
-    private fun <T> mutate(change: (CommentsFile) -> Pair<CommentsFile, T>): T? {
+    private fun <T> mutate(change: (CommentsFile) -> Pair<CommentsFile, T>): T? = lock.withLock {
         if (isReadOnly) {
             notify("comments.json cannot be written until it is fixed or reset", NotificationType.WARNING)
-            return null
+            return@withLock null
         }
         var produced: T? = null
-        return try {
+        try {
             val written = repository.mutate { file ->
                 val (updated, result) = change(file)
                 produced = result
