@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "metadata": {
+    "projectName": "my-project",
+    "created": "2026-09-11T10:00:00Z",
+    "lastModified": "2026-09-11T15:30:00Z"
+  },
+  "comments": {
+    "src/Service/UserService.php": [
+      {
+        "id": "c_1726061700_0",
+        "line": 45,
+        "author": "human",
+        "text": "zde je potřeba FQN",
+        "status": "open",
+        "created": "2026-09-11T10:05:00Z",
+        "processed": false,
+        "processedAt": null,
+        "claudeResponse": null
+      },
+      {
+        "id": "c_1726061700_1",
+        "line": 45,
+        "author": "human",
+        "text": "to OK není, FQN nemusí být tady",
+        "status": "open",
+        "created": "2026-09-11T10:15:00Z",
+        "processed": false,
+        "processedAt": null,
+        "claudeResponse": null
+      },
+      {
+        "id": "c_1726061700_2",
+        "line": 78,
+        "author": "human",
+        "text": "refactor this method",
+        "status": "processed",
+        "created": "2026-09-11T10:20:00Z",
+        "processed": true,
+        "processedAt": "2026-09-11T10:25:00Z",
+        "claudeResponse": "This method can be simplified by extracting the validation logic into a separate private method."
+      }
+    ],
+    "config/services.neon": [
+      {
+        "id": "c_1726061701_0",
+        "line": 12,
+        "author": "human",
+        "text": "is this config correct for production?",
+        "status": "resolved",
+        "created": "2026-09-11T10:30:00Z",
+        "processed": true,
+        "processedAt": "2026-09-11T10:35:00Z",
+        "claudeResponse": "Yes, this configuration is correct for production. The debug mode is set to false and all external services are configured with production endpoints."
+      }
+    ]
+  }
+}
