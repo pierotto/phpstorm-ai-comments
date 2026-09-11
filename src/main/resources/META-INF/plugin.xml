@@ -1,0 +1,9 @@
+<idea-plugin>
+    <id>cz.petrgala.aicomments</id>
+    <name>AI Comments</name>
+    <vendor>Petr Gala</vendor>
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+    </extensions>
+</idea-plugin>
