@@ -13,4 +13,16 @@
                              nonDefaultProject="true"
                              instance="cz.petrgala.aicomments.settings.AiCommentsConfigurable"/>
     </extensions>
+
+    <actions>
+        <action id="cz.petrgala.aicomments.AddComment"
+                class="cz.petrgala.aicomments.actions.AddCommentAction"
+                text="Add AI Comment"
+                description="Add an AI comment to the current line">
+            <add-to-group group-id="EditorGutterPopupMenu" anchor="last"/>
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+            <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt shift C"/>
+            <keyboard-shortcut keymap="Mac OS X 10.5+" first-keystroke="meta alt shift C"/>
+        </action>
+    </actions>
 </idea-plugin>
