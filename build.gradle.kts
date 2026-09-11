@@ -44,6 +44,7 @@ kotlin {
         jvmTarget = JvmTarget.JVM_17
         apiVersion = KotlinVersion.KOTLIN_1_9
         languageVersion = KotlinVersion.KOTLIN_1_9
+        freeCompilerArgs.add("-Xjvm-default=all")
     }
 }
 
