@@ -96,11 +96,7 @@ The skill processes threads, not records:
 - A thread needs work when its newest record is `open`.
 - Read the whole thread (all records, oldest to newest, `text` and `claudeResponse`) as the
   conversation; the newest `text` is the message to act on.
-- Answer once per thread, into the newest open record: `status: processed`,
-  `processed: true`, `processedAt`, `claudeResponse`. If the human wrote several open
-  records in one thread before Claude ran, treat their texts together as one message, put
-  the answer on the newest, and mark the older open ones `processed` with
-  `claudeResponse: null`.
+- Answer once per thread, into the newest open record: `status: processed`, `processed: true`, `processedAt`, `claudeResponse`. A thread never holds two open records — the plugin resolves the previous record on every reply — so an older `resolved` record with `claudeResponse: null` is a message the user followed up before Claude ran and is read as part of the conversation.
 - Never set `resolved`, never touch `resolved` records, never change `threadId`.
 - The rest of the procedure (context lines, instruction vs question, line correction,
   single write, report) stays as it is.

@@ -59,6 +59,9 @@ thread's state is the state of its newest record:
 - `processed` — you answered, the user has not reacted → leave it;
 - `resolved` — the user closed the thread → leave it.
 
+A `resolved` record with `"claudeResponse": null` is a message the user followed up before
+you ran; read it as part of the conversation, together with the newer message.
+
 ## Procedure
 
 1. Read `.claude/comments.json`. Group records by `threadId`. If the file is missing or no
@@ -79,10 +82,6 @@ thread's state is the state of its newest record:
    - Write `claudeResponse` on the newest record: 1–3 sentences in the language of the
      message saying what you changed (with the new name / shape) or the answer. No
      preamble.
-   - If the thread has several `open` records (the user wrote twice before you ran), read
-     their texts together as one message, answer on the newest, and set the older open
-     ones to `"status": "processed"`, `"processed": true`, `"processedAt": "<now>"` with
-     `"claudeResponse": null`.
 3. Update the newest record: `"status": "processed"`, `"processed": true`,
    `"processedAt": "<now, UTC ISO 8601>"`, `"claudeResponse": "<text>"`.
 4. Set `metadata.lastModified` to the same timestamp.
