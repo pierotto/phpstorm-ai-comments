@@ -2,9 +2,7 @@ package cz.petrgala.aicomments.ui
 
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
-import cz.petrgala.aicomments.model.Comment
 import cz.petrgala.aicomments.model.CommentThread
-import cz.petrgala.aicomments.model.thread
 import cz.petrgala.aicomments.settings.AiCommentsSettings
 import cz.petrgala.aicomments.storage.CommentStore
 
@@ -13,10 +11,6 @@ object CommentWorkflow {
     fun addComment(project: Project, relativePath: String, line: Int) {
         val text = AddCommentDialog(project, line, maxLength(project)).showAndGetText() ?: return
         project.service<CommentStore>().add(relativePath, line, text)
-    }
-
-    fun openComment(project: Project, comment: Comment) {
-        project.service<CommentStore>().snapshot().thread(comment.threadId)?.let { openThread(project, it) }
     }
 
     fun openThread(project: Project, thread: CommentThread) {

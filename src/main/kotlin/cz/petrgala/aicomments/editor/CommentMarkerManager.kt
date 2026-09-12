@@ -59,13 +59,13 @@ class CommentMarkerManager(private val project: Project) : Disposable {
         val file = fileDocumentManager.getFile(document) ?: return
         val relativePath = ProjectPaths.relativePath(project, file) ?: return
         val unsaved = fileDocumentManager.isDocumentUnsaved(document)
-        val markers = project.service<CommentStore>().commentsFor(relativePath)
-            .groupBy { comment -> if (unsaved) currentLines[comment.id] ?: comment.line else comment.line }
+        val markers = project.service<CommentStore>().threadsFor(relativePath)
+            .groupBy { thread -> if (unsaved) currentLines[thread.newest.id] ?: thread.line else thread.line }
             .filterKeys { it in 1..document.lineCount }
-            .map { (line, comments) ->
+            .map { (line, threads) ->
                 editor.markupModel.addLineHighlighter(null, line - 1, HighlighterLayer.LAST).apply {
-                    gutterIconRenderer = CommentGutterIconRenderer(project, comments)
-                    putUserData(COMMENT_IDS_KEY, comments.map { it.id })
+                    gutterIconRenderer = CommentGutterIconRenderer(project, threads)
+                    putUserData(COMMENT_IDS_KEY, threads.flatMap { thread -> thread.records.map { it.id } })
                 }
             }
         editor.putUserData(MARKERS_KEY, markers)

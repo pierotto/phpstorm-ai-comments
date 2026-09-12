@@ -64,4 +64,28 @@ class CommentMarkerManagerTest : AiCommentsPlatformTestCase() {
 
         assertTrue(markers.markers(myFixture.editor).isEmpty())
     }
+
+    fun testReplyKeepsOneMarkerWithTheThreadStatus() {
+        myFixture.configureByText("Foo.php", "<?php\nline 2\n")
+        val first = store.add("Foo.php", 2, "first")!!
+        store.resolve(first.threadId)
+
+        store.reply(first.threadId, "again")
+
+        val marker = markers.markers(myFixture.editor).single()
+        assertSame(AiCommentsIcons.Open, marker.gutterIconRenderer!!.icon)
+        assertEquals(2, marker.getUserData(CommentMarkerManager.COMMENT_IDS_KEY)!!.size)
+        assertEquals(1, (marker.gutterIconRenderer as CommentGutterIconRenderer).threads.size)
+    }
+
+    fun testResolvedThreadIsStillClickable() {
+        myFixture.configureByText("Foo.php", "<?php\n")
+        val c = store.add("Foo.php", 1, "text")!!
+
+        store.resolve(c.threadId)
+
+        val renderer = markers.markers(myFixture.editor).single().gutterIconRenderer as CommentGutterIconRenderer
+        assertNotNull(renderer.clickAction)
+        assertTrue(renderer.isNavigateAction)
+    }
 }
