@@ -1,6 +1,11 @@
 package cz.petrgala.aicomments.editor
 
+import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.components.service
+import com.intellij.openapi.editor.ex.DocumentEx
+import com.intellij.openapi.fileEditor.FileDocumentManager
+import com.intellij.openapi.vfs.VfsUtil
+import com.intellij.util.ui.UIUtil
 import cz.petrgala.aicomments.AiCommentsPlatformTestCase
 import cz.petrgala.aicomments.storage.ProjectPaths
 import java.nio.file.Files
@@ -87,5 +92,42 @@ class CommentMarkerManagerTest : AiCommentsPlatformTestCase() {
         val renderer = markers.markers(myFixture.editor).single().gutterIconRenderer as CommentGutterIconRenderer
         assertNotNull(renderer.clickAction)
         assertTrue(renderer.isNavigateAction)
+    }
+
+    fun testReloadFromDiskReanchorsTheMarkerAndWritesTheLine() {
+        myFixture.configureByText("Foo.php", "a\nb\n'winstrom' => [\nc\n")
+        val c = store.add("Foo.php", 3, "text")!!
+        val document = myFixture.editor.document
+        val file = FileDocumentManager.getInstance().getFile(document)!!
+
+        WriteCommandAction.runWriteCommandAction(project) {
+            VfsUtil.saveText(file, "<?php\nuse X;\na\nb\nClientInterface::ENVELOPE => [\nc\n")
+        }
+        UIUtil.dispatchAllInvocationEvents()
+
+        val marker = markers.markers(myFixture.editor).single()
+        assertTrue(marker.isValid)
+        assertEquals(4, document.getLineNumber(marker.startOffset))
+        assertEquals(5, store.commentsFor("Foo.php").single { it.id == c.id }.line)
+    }
+
+    fun testWholeTextReplaceInEditorReanchorsTheMarkerAndSyncsOnSave() {
+        myFixture.configureByText("Foo.php", "a\nb\n'winstrom' => [\nc\n")
+        val c = store.add("Foo.php", 3, "text")!!
+        val document = myFixture.editor.document as DocumentEx
+
+        WriteCommandAction.runWriteCommandAction(project) {
+            document.replaceText("<?php\na\nb\nClientInterface::ENVELOPE => [\nc\n", document.modificationStamp + 1)
+        }
+        UIUtil.dispatchAllInvocationEvents()
+
+        val marker = markers.markers(myFixture.editor).single()
+        assertTrue(marker.isValid)
+        assertEquals(3, document.getLineNumber(marker.startOffset))
+        assertEquals(3, store.commentsFor("Foo.php").single { it.id == c.id }.line)
+
+        FileDocumentManager.getInstance().saveDocument(document)
+
+        assertEquals(4, store.commentsFor("Foo.php").single { it.id == c.id }.line)
     }
 }
