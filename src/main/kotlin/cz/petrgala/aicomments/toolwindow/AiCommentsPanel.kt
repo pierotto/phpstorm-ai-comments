@@ -107,7 +107,7 @@ class AiCommentsPanel(private val project: Project, parentDisposable: Disposable
     private fun navigateToSelection(): Boolean {
         val node = tree.lastSelectedPathComponent as? DefaultMutableTreeNode ?: return false
         val target = node.userObject as? ThreadNode ?: return false
-        val file = ProjectPaths.findFile(project, target.path) ?: return false
+        val file = ProjectPaths.findFile(project, target.thread.path) ?: return false
         OpenFileDescriptor(project, file, target.thread.line - 1, 0).navigate(true)
         return true
     }

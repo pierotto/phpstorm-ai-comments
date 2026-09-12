@@ -60,7 +60,7 @@ class CommentMarkerManager(private val project: Project) : Disposable {
         val relativePath = ProjectPaths.relativePath(project, file) ?: return
         val unsaved = fileDocumentManager.isDocumentUnsaved(document)
         val markers = project.service<CommentStore>().threadsFor(relativePath)
-            .groupBy { thread -> if (unsaved) currentLines[thread.newest.id] ?: thread.line else thread.line }
+            .groupBy { thread -> if (unsaved) thread.records.firstNotNullOfOrNull { currentLines[it.id] } ?: thread.line else thread.line }
             .filterKeys { it in 1..document.lineCount }
             .map { (line, threads) ->
                 editor.markupModel.addLineHighlighter(null, line - 1, HighlighterLayer.LAST).apply {

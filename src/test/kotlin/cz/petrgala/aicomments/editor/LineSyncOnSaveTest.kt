@@ -41,6 +41,21 @@ class LineSyncOnSaveTest : AiCommentsPlatformTestCase() {
         assertEquals(1, comments.single { it.id == other.id }.line)
     }
 
+    fun testReplyWhileUnsavedKeepsTheThreadOnTheMovedLine() {
+        myFixture.configureByText("Foo.php", "a\nb\nc\n")
+        val first = store.add("Foo.php", 3, "text")!!
+
+        WriteCommandAction.runWriteCommandAction(project) {
+            myFixture.editor.document.insertString(0, "x\ny\n")
+        }
+        val reply = store.reply(first.threadId, "again")!!
+        FileDocumentManager.getInstance().saveDocument(myFixture.editor.document)
+
+        val comments = store.commentsFor("Foo.php")
+        assertEquals(5, comments.single { it.id == first.id }.line)
+        assertEquals(5, comments.single { it.id == reply.id }.line)
+    }
+
     fun testUnchangedLinesDoNotWrite() {
         myFixture.configureByText("Foo.php", "a\nb\n")
         store.add("Foo.php", 2, "text")

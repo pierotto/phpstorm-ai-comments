@@ -14,6 +14,7 @@ import cz.petrgala.aicomments.model.CommentThread
 import java.awt.event.ActionEvent
 import javax.swing.Action
 import javax.swing.JComponent
+import javax.swing.SwingUtilities
 
 class ThreadDialog(project: Project, private val thread: CommentThread, maxLength: Int) : DialogWrapper(project) {
 
@@ -24,6 +25,7 @@ class ThreadDialog(project: Project, private val thread: CommentThread, maxLengt
     }
 
     private val input = CommentTextInput(maxLength, rows = 4)
+    private lateinit var messages: JBScrollPane
 
     val outcome: Outcome
         get() = when (exitCode) {
@@ -36,11 +38,13 @@ class ThreadDialog(project: Project, private val thread: CommentThread, maxLengt
         title = "AI Comment Thread – Line ${thread.line}"
         setOKButtonText("Reply")
         init()
+        SwingUtilities.invokeLater { messages.verticalScrollBar.value = messages.verticalScrollBar.maximum }
     }
 
     override fun createCenterPanel(): JComponent = panel {
         row {
-            cell(JBScrollPane(messagesPanel()).apply { preferredSize = JBUI.size(600, 320) }).align(AlignX.FILL)
+            messages = JBScrollPane(messagesPanel()).apply { preferredSize = JBUI.size(600, 320) }
+            cell(messages).align(AlignX.FILL)
         }
         separator()
         row { label("Reply") }

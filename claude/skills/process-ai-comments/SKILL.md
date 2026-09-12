@@ -97,7 +97,7 @@ you ran; read it as part of the conversation, together with the newer message.
   otherwise leave it. Never delete a record, never change `id`, `threadId`, `text`,
   `created` or `author`, never add records.
 - Never set `"status": "resolved"` — only the user closes a thread, from the IDE.
-- Leave `processed` and `resolved` records untouched.
+- Leave `processed` and `resolved` records untouched, except `line` when the whole thread moved (step 2).
 - If a line number no longer matches the code the thread describes (the file changed),
   look for the described code nearby; if you cannot find it, answer in `claudeResponse`
   that the line could not be matched and still mark the record processed.

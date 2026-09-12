@@ -8,7 +8,7 @@ import javax.swing.tree.DefaultMutableTreeNode
 
 data class FileNode(val path: String, val count: Int)
 
-data class ThreadNode(val path: String, val thread: CommentThread, val outOfRange: Boolean)
+data class ThreadNode(val thread: CommentThread, val outOfRange: Boolean)
 
 object CommentsTreeModel {
 
@@ -23,7 +23,7 @@ object CommentsTreeModel {
             val fileNode = DefaultMutableTreeNode(FileNode(path, visible.size))
             visible.forEach { thread ->
                 val outOfRange = lineCount != null && thread.line > lineCount
-                fileNode.add(DefaultMutableTreeNode(ThreadNode(path, thread, outOfRange)))
+                fileNode.add(DefaultMutableTreeNode(ThreadNode(thread, outOfRange)))
             }
             root.add(fileNode)
         }
