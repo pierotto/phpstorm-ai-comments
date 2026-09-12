@@ -106,9 +106,9 @@ class AiCommentsPanel(private val project: Project, parentDisposable: Disposable
 
     private fun navigateToSelection(): Boolean {
         val node = tree.lastSelectedPathComponent as? DefaultMutableTreeNode ?: return false
-        val target = node.userObject as? CommentNode ?: return false
+        val target = node.userObject as? ThreadNode ?: return false
         val file = ProjectPaths.findFile(project, target.path) ?: return false
-        OpenFileDescriptor(project, file, target.comment.line - 1, 0).navigate(true)
+        OpenFileDescriptor(project, file, target.thread.line - 1, 0).navigate(true)
         return true
     }
 
@@ -119,11 +119,15 @@ class AiCommentsPanel(private val project: Project, parentDisposable: Disposable
                     append(data.path)
                     append("  ${data.count}", SimpleTextAttributes.GRAYED_ATTRIBUTES)
                 }
-                is CommentNode -> {
-                    icon = AiCommentsIcons.forStatus(data.comment.status)
-                    append("L${data.comment.line}", SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
-                    append(" · ${data.comment.status.json} · ", SimpleTextAttributes.GRAYED_ATTRIBUTES)
-                    append(data.comment.text.take(TEXT_PREVIEW_LENGTH) + if (data.comment.text.length > TEXT_PREVIEW_LENGTH) "…" else "")
+                is ThreadNode -> {
+                    val thread = data.thread
+                    val text = thread.first.text
+                    icon = AiCommentsIcons.forStatus(thread.status)
+                    append("L${thread.line}", SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
+                    append(" · ${thread.status.json}", SimpleTextAttributes.GRAYED_ATTRIBUTES)
+                    if (thread.records.size > 1) append(" · ${thread.records.size} messages", SimpleTextAttributes.GRAYED_ATTRIBUTES)
+                    append(" · ", SimpleTextAttributes.GRAYED_ATTRIBUTES)
+                    append(text.take(TEXT_PREVIEW_LENGTH) + if (text.length > TEXT_PREVIEW_LENGTH) "…" else "")
                     if (data.outOfRange) append("  (line out of range)", SimpleTextAttributes.ERROR_ATTRIBUTES)
                 }
             }
