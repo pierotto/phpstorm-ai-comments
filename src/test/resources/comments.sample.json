@@ -9,17 +9,19 @@
     "src/Service/UserService.php": [
       {
         "id": "c_1726061700_0",
+        "threadId": "c_1726061700_0",
         "line": 45,
         "author": "human",
         "text": "zde je potřeba FQN",
-        "status": "open",
+        "status": "resolved",
         "created": "2026-09-11T10:05:00Z",
-        "processed": false,
-        "processedAt": null,
-        "claudeResponse": null
+        "processed": true,
+        "processedAt": "2026-09-11T10:10:00Z",
+        "claudeResponse": "Replaced the short class name with the fully qualified one."
       },
       {
         "id": "c_1726061700_1",
+        "threadId": "c_1726061700_0",
         "line": 45,
         "author": "human",
         "text": "to OK není, FQN nemusí být tady",
@@ -31,6 +33,7 @@
       },
       {
         "id": "c_1726061700_2",
+        "threadId": "c_1726061700_2",
         "line": 78,
         "author": "human",
         "text": "refactor this method",
@@ -44,6 +47,7 @@
     "config/services.neon": [
       {
         "id": "c_1726061701_0",
+        "threadId": "c_1726061701_0",
         "line": 12,
         "author": "human",
         "text": "is this config correct for production?",

@@ -88,11 +88,13 @@ class CommentsFileCodec(private val onSkippedRecord: (String) -> Unit = {}) {
             created = created,
             processedAt = o.optString("processedAt"),
             claudeResponse = o.optString("claudeResponse"),
+            threadId = o.optString("threadId") ?: id,
         )
     }
 
     private fun encodeComment(c: Comment): JsonObject = JsonObject().apply {
         addProperty("id", c.id)
+        addProperty("threadId", c.threadId)
         addProperty("line", c.line)
         addProperty("author", c.author)
         addProperty("text", c.text)

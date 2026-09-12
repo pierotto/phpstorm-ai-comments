@@ -22,9 +22,9 @@ class CommentsFileCodecTest {
         val first = file.comments.getValue("src/Service/UserService.php")[0]
         assertEquals("c_1726061700_0", first.id)
         assertEquals(45, first.line)
-        assertEquals(CommentStatus.OPEN, first.status)
-        assertFalse(first.processed)
-        assertNull(first.claudeResponse)
+        assertEquals(CommentStatus.RESOLVED, first.status)
+        assertTrue(first.processed)
+        assertEquals("Replaced the short class name with the fully qualified one.", first.claudeResponse)
         val processed = file.comments.getValue("src/Service/UserService.php")[2]
         assertEquals(CommentStatus.PROCESSED, processed.status)
         assertTrue(processed.processed)
@@ -95,5 +95,25 @@ class CommentsFileCodecTest {
             CommentsFileCodec().decode("""{"version":2,"comments":{}}""")
         }
         assertEquals(2, e.version)
+    }
+
+    @Test
+    fun `threadId round trips and defaults to id when missing`() {
+        val json = """
+            {"version":1,"comments":{"a.php":[
+                {"id":"c_1_0","line":1,"text":"first","status":"resolved","created":"2026-09-11T10:00:00Z"},
+                {"id":"c_1_1","threadId":"c_1_0","line":1,"text":"again","status":"open","created":"2026-09-11T10:05:00Z"}
+            ]}}
+        """.trimIndent()
+        val codec = CommentsFileCodec()
+
+        val file = codec.decode(json)
+        val encoded = codec.encode(file)
+
+        val records = file.comments.getValue("a.php")
+        assertEquals("c_1_0", records[0].threadId)
+        assertEquals("c_1_0", records[1].threadId)
+        assertTrue(encoded.contains("\"threadId\": \"c_1_0\""))
+        assertEquals(file, codec.decode(encoded))
     }
 }

@@ -9,6 +9,7 @@ data class Comment(
     val created: String,
     val processedAt: String?,
     val claudeResponse: String?,
+    val threadId: String = id,
 ) {
     val processed: Boolean get() = processedAt != null
 
