@@ -25,7 +25,7 @@ import com.intellij.util.ui.tree.TreeUtil
 import cz.petrgala.aicomments.editor.AiCommentsIcons
 import cz.petrgala.aicomments.model.CommentStatus
 import cz.petrgala.aicomments.model.CommentsFile
-import cz.petrgala.aicomments.model.count
+import cz.petrgala.aicomments.model.countThreads
 import cz.petrgala.aicomments.settings.AiCommentsSettings
 import cz.petrgala.aicomments.settings.AiCommentsSettingsListener
 import cz.petrgala.aicomments.storage.CommentStore
@@ -93,7 +93,7 @@ class AiCommentsPanel(private val project: Project, parentDisposable: Disposable
     )
 
     private fun render(snapshot: CommentsFile) {
-        summary.text = "Open ${snapshot.count(CommentStatus.OPEN)} · Processed ${snapshot.count(CommentStatus.PROCESSED)} · Resolved ${snapshot.count(CommentStatus.RESOLVED)}"
+        summary.text = "Open ${snapshot.countThreads(CommentStatus.OPEN)} · Processed ${snapshot.countThreads(CommentStatus.PROCESSED)} · Resolved ${snapshot.countThreads(CommentStatus.RESOLVED)}"
         val hideResolved = AiCommentsSettings.getInstance(project).state.hideResolved
         treeModel.setRoot(CommentsTreeModel.build(snapshot, hideResolved, ::lineCountOf))
         TreeUtil.expandAll(tree)
