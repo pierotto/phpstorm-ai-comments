@@ -8,13 +8,17 @@ root; the plugin shows their state in the gutter and a tool window.
 
 1. In the editor: right-click a line number (or press `Cmd+Alt+Shift+A`, `Ctrl+Alt+Shift+A`
    on Linux/Windows) → **Add AI Comment** → type the note. A blue dot appears in the gutter.
-2. In Claude Code, in the same project: `/process-ai-comments` (or "process AI comments").
-   Claude edits the code or answers, and writes its response back into the file.
-3. The dot turns green. Click it to read the response, then **OK** (marks it resolved) or
-   **Follow-up** (adds a new open comment on the same line and resolves the previous one).
+2. In Claude Code, in the same project: `/process-ai-comments` (or "process AI comments",
+   "zpracuj komentáře"). Claude edits the code or answers, and writes its reply back into
+   the file.
+3. The dot turns green. Click it to open the thread: your note, Claude's reply, and a
+   **Reply** field. **Resolve** closes the thread (gray check); **Reply** sends a new message
+   to Claude (blue dot again). A resolved thread can be opened and replied to at any time —
+   the reply reopens it. Claude never resolves a thread.
 
-Gutter icons: blue dot = open, green dot = processed, gray check = resolved. When a line has
-several comments the icon shows the most important state (open > processed > resolved).
+Gutter icons: blue dot = waiting for Claude, green dot = Claude replied, gray check =
+resolved. When a line has several threads the icon shows the most important state
+(open > processed > resolved).
 
 ## Installation
 
@@ -48,7 +52,9 @@ The skill is global, so it works in every project where the plugin is used.
 
 ## File format
 
-See `claude/skills/process-ai-comments/SKILL.md`. Add `.claude/comments.json` to
+See `claude/skills/process-ai-comments/SKILL.md`. Records of one line form a
+thread by `threadId`; files written by an older plugin version (no `threadId`) load as
+one thread per record. Add `.claude/comments.json` to
 `.gitignore` if the comments should stay local.
 
 A malformed file shows a notification with **Reset file** (the broken file is kept as
@@ -69,9 +75,9 @@ Requires JDK 21 (`brew install --cask temurin@21`).
 
 - [ ] Add a comment from the gutter menu, the editor menu and the shortcut
 - [ ] Validation: empty text blocked, warning from 400 characters, blocked above 500
-- [ ] Open comment → *Mark as Resolved* → gray check
+- [ ] Open thread → *Resolve* → gray check; open it again → *Reply* → blue dot
 - [ ] Edit the JSON externally (open → processed with a response) → green dot within ~1 s
-- [ ] Processed comment → *OK* → resolved; *Follow-up* → new open comment, old resolved
+- [ ] Processed thread → dialog shows the note and the reply → *Reply* → new record with the same `threadId`, previous one resolved
 - [ ] Insert lines above a comment, save → line number updated in the JSON
 - [ ] Tool window counts, navigation on double-click and Enter, *Hide Resolved*, *Reload*
 - [ ] Settings: gutter icons off removes dots, tool window off hides the stripe
