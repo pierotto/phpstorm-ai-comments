@@ -12,11 +12,14 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import cz.petrgala.aicomments.model.Comment
 import cz.petrgala.aicomments.model.CommentStatus
+import cz.petrgala.aicomments.model.CommentThread
 import cz.petrgala.aicomments.model.CommentsFile
-import cz.petrgala.aicomments.model.find
 import cz.petrgala.aicomments.model.nextId
+import cz.petrgala.aicomments.model.thread
+import cz.petrgala.aicomments.model.threadsFor
 import cz.petrgala.aicomments.model.withComment
 import cz.petrgala.aicomments.model.withLines
+import cz.petrgala.aicomments.model.withReply
 import cz.petrgala.aicomments.model.withStatus
 import java.io.IOException
 import java.util.concurrent.locks.ReentrantLock
@@ -46,19 +49,24 @@ class CommentStore(private val project: Project) {
 
     fun commentsFor(relativePath: String): List<Comment> = snapshot.comments[relativePath].orEmpty()
 
+    fun threadsFor(relativePath: String): List<CommentThread> = snapshot.threadsFor(relativePath)
+
     fun add(relativePath: String, line: Int, text: String): Comment? = mutate { file ->
         val comment = newComment(file, line, text)
         file.withComment(relativePath, comment) to comment
     }
 
-    fun resolve(id: String) {
-        mutate { file -> file.withStatus(id, CommentStatus.RESOLVED) to Unit }
+    fun resolve(threadId: String) {
+        mutate { file ->
+            val thread = file.thread(threadId) ?: return@mutate file to Unit
+            file.withStatus(thread.newest.id, CommentStatus.RESOLVED) to Unit
+        }
     }
 
-    fun followUp(originalId: String, text: String): Comment? = mutate { file ->
-        val original = file.find(originalId) ?: return@mutate file to null
-        val comment = newComment(file, original.comment.line, text)
-        file.withStatus(originalId, CommentStatus.RESOLVED).withComment(original.path, comment) to comment
+    fun reply(threadId: String, text: String): Comment? = mutate { file ->
+        val thread = file.thread(threadId) ?: return@mutate file to null
+        val comment = newComment(file, thread.line, text, threadId)
+        file.withReply(comment) to comment
     }
 
     fun updateLines(relativePath: String, idToLine: Map<String, Int>) {
@@ -106,16 +114,20 @@ class CommentStore(private val project: Project) {
         }
     }
 
-    private fun newComment(file: CommentsFile, line: Int, text: String) = Comment(
-        id = file.nextId(repository.epochSeconds()),
-        line = line,
-        author = Comment.HUMAN,
-        text = text,
-        status = CommentStatus.OPEN,
-        created = repository.now(),
-        processedAt = null,
-        claudeResponse = null,
-    )
+    private fun newComment(file: CommentsFile, line: Int, text: String, threadId: String? = null): Comment {
+        val id = file.nextId(repository.epochSeconds())
+        return Comment(
+            id = id,
+            line = line,
+            author = Comment.HUMAN,
+            text = text,
+            status = CommentStatus.OPEN,
+            created = repository.now(),
+            processedAt = null,
+            claudeResponse = null,
+            threadId = threadId ?: id,
+        )
+    }
 
     private fun <T> mutate(change: (CommentsFile) -> Pair<CommentsFile, T>): T? = lock.withLock {
         if (isReadOnly) {

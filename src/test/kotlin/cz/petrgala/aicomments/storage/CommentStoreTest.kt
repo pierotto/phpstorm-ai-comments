@@ -22,18 +22,24 @@ class CommentStoreTest : AiCommentsPlatformTestCase() {
         assertEquals(1, received.size)
     }
 
-    fun testResolveAndFollowUp() {
+    fun testResolveAndReplyWorkOnTheThread() {
         val first = store.add("src/Foo.php", 3, "first")!!
-        store.resolve(first.id)
+        store.resolve(first.threadId)
         assertEquals(CommentStatus.RESOLVED, store.snapshot().find(first.id)!!.comment.status)
 
-        val second = store.add("src/Foo.php", 3, "second")!!
-        val followUp = store.followUp(second.id, "not good enough")!!
+        val reply = store.reply(first.threadId, "not good enough")!!
 
-        assertEquals(CommentStatus.RESOLVED, store.snapshot().find(second.id)!!.comment.status)
-        assertEquals(CommentStatus.OPEN, followUp.status)
-        assertEquals(3, followUp.line)
-        assertEquals(3, store.commentsFor("src/Foo.php").size)
+        assertEquals(first.id, reply.threadId)
+        assertEquals(CommentStatus.OPEN, reply.status)
+        assertEquals(3, reply.line)
+        val thread = store.threadsFor("src/Foo.php").single()
+        assertEquals(listOf(first.id, reply.id), thread.records.map { it.id })
+        assertEquals(CommentStatus.OPEN, thread.status)
+
+        store.resolve(first.threadId)
+
+        assertEquals(CommentStatus.RESOLVED, store.threadsFor("src/Foo.php").single().status)
+        assertNull(store.reply("nope", "text"))
     }
 
     fun testUpdateLines() {

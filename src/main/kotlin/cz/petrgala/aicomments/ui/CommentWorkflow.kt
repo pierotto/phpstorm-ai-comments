@@ -22,11 +22,11 @@ object CommentWorkflow {
         val store = project.service<CommentStore>()
         when (dialog.outcome) {
             ViewCommentDialog.Outcome.CLOSE -> Unit
-            ViewCommentDialog.Outcome.RESOLVE -> store.resolve(comment.id)
+            ViewCommentDialog.Outcome.RESOLVE -> store.resolve(comment.threadId)
             ViewCommentDialog.Outcome.FOLLOW_UP -> {
                 val maxLength = AiCommentsSettings.getInstance(project).state.maxCommentLength
                 val text = AddCommentDialog(project, comment.line, maxLength, followUp = true).showAndGetText() ?: return
-                store.followUp(comment.id, text)
+                store.reply(comment.threadId, text)
             }
         }
     }

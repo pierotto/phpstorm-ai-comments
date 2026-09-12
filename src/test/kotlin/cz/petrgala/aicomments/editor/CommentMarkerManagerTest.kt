@@ -29,7 +29,7 @@ class CommentMarkerManagerTest : AiCommentsPlatformTestCase() {
         myFixture.configureByText("Foo.php", "<?php\nline 2\n")
         val c = store.add("Foo.php", 1, "text")!!
 
-        store.resolve(c.id)
+        store.resolve(c.threadId)
 
         assertSame(AiCommentsIcons.Resolved, markers.markers(myFixture.editor).single().gutterIconRenderer!!.icon)
     }
@@ -37,7 +37,7 @@ class CommentMarkerManagerTest : AiCommentsPlatformTestCase() {
     fun testTwoCommentsOnOneLineYieldOneMarkerWithHighestStatus() {
         myFixture.configureByText("Foo.php", "<?php\nline 2\n")
         val first = store.add("Foo.php", 2, "first")!!
-        store.resolve(first.id)
+        store.resolve(first.threadId)
         store.add("Foo.php", 2, "second")
 
         val list = markers.markers(myFixture.editor)
