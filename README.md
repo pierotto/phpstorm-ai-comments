@@ -24,18 +24,24 @@ resolved. When a line has several threads the icon shows the most important stat
 
 ### Plugin
 
-1. `./gradlew buildPlugin` → `build/distributions/ai-comments-<version>.zip`
-2. PhpStorm → *Settings → Plugins → ⚙ → Install Plugin from Disk…* → pick the ZIP.
+1. Download `ai-comments-<version>.zip` from the
+   [latest release](https://github.com/pierotto/phpstorm-ai-comments/releases/latest)
+   (or build it yourself: `./gradlew buildPlugin` → `build/distributions/`).
+2. PhpStorm → *Settings → Plugins → ⚙ → Install Plugin from Disk…* → pick the ZIP → restart.
 
-Requires PhpStorm 2024.1 or newer.
+Requires PhpStorm 2024.1 or newer. To update, install the newer ZIP the same way.
 
 ### Claude Code skill
 
 ```bash
-cp -r claude/skills/process-ai-comments ~/.claude/skills/
+mkdir -p ~/.claude/skills/process-ai-comments
+curl -fsSL https://raw.githubusercontent.com/pierotto/phpstorm-ai-comments/main/claude/skills/process-ai-comments/SKILL.md \
+  -o ~/.claude/skills/process-ai-comments/SKILL.md
 ```
 
-The skill is global, so it works in every project where the plugin is used.
+(or from a checkout: `cp -r claude/skills/process-ai-comments ~/.claude/skills/`). The skill
+is global, so it works in every project where the plugin is used. The file must live in its
+own directory — a bare `~/.claude/skills/SKILL.md` is not picked up.
 
 ## Settings
 
@@ -71,6 +77,16 @@ A malformed file shows a notification with **Reset file** (the broken file is ke
 
 Requires JDK 21 (`brew install --cask temurin@21`).
 
+### Release
+
+Bump `version` in `build.gradle.kts`, commit, then tag and push:
+
+```bash
+git tag v0.2.0 && git push origin main v0.2.0
+```
+
+The `release` workflow builds the plugin and attaches the ZIP to a GitHub release for the tag.
+
 ### Smoke checklist before a release
 
 - [ ] Add a comment from the gutter menu, the editor menu and the shortcut
@@ -82,3 +98,7 @@ Requires JDK 21 (`brew install --cask temurin@21`).
 - [ ] Tool window counts, navigation on double-click and Enter, *Hide Resolved*, *Reload*
 - [ ] Settings: gutter icons off removes dots, tool window off hides the stripe
 - [ ] Malformed JSON → notification, *Reset file* recovers
+
+## License
+
+[MIT](LICENSE)
