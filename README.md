@@ -4,6 +4,10 @@ Leave a note on a line of code in PhpStorm, run one command in Claude Code, and 
 answer — or the change — right where you asked. Notes are threads: you write, Claude
 replies, you reply back, and you close the thread when you are done.
 
+![AI Comments demo: three comments, one Claude Code run, a reply in the thread](docs/demo.gif)
+
+([same demo as MP4](docs/demo.mp4))
+
 ## How it works
 
 1. Right-click a line number (or press `Cmd+Alt+Shift+A`, `Ctrl+Alt+Shift+A` on
